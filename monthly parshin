@@ -1,0 +1,81 @@
+# 5월 1~7일
+from urllib.parse import unquote, quote
+import xml.etree.ElementTree as et
+import json
+import requests
+import pandas as pd
+import sys
+import time
+import datetime
+
+svc_url = "http://openapi.data.go.kr/openapi/service/rest/Covid19/getCovid19InfStateJson"
+serviceKey = """%2F2KW4c0b9FWLrg3LUUT5AaBLM3l%2FrMfZzNHFx%2BZ45iVaZXfJnr3H0YQ%2FAWAQlkoNMFCdR12jBYRpyQGFIY2Fng%3D%3D"""
+str_format = svc_url + "?serviceKey={0}&pageNo={1}&numOfRows={2}&startCreateDt={3}&endCreateDt={4}"
+columns = ["seq", "stateDt", "stateTime", "decideCnt", "clearCnt", "deathCnt", "careCnt", "resutlNegCnt", 
+           "accExamCnt", "accExamCompCnt", "accDefRate", "createDt", "updateDt"]
+
+def get_covid19_data(startCreateDt, endCreateDt, pageNo=1, numOfRows=10):
+
+    # 기간설정 (5월 1~7일)
+    q_str = str_format.format(serviceKey, pageNo, numOfRows, "20210501", "20210507")  
+    
+    res = requests.get(q_str)
+    print(res.text)
+    
+    xtree = et.fromstring(res.text)
+    xtree_header = xtree.find('header')
+    xtree_body_items = xtree.find('body').find('items')
+
+    rows = []
+    for node in xtree_body_items:
+        seq = node.find("seq").text
+        stateDt = node.find("stateDt").text
+        stateTime = node.find("stateTime").text
+        decideCnt = node.find("decideCnt").text
+        clearCnt = node.find("clearCnt").text
+        examCnt = node.find("examCnt").text
+        deathCnt = node.find("deathCnt").text
+        careCnt = node.find("careCnt").text
+        resutlNegCnt = node.find("resutlNegCnt").text
+        accExamCnt = node.find("accExamCnt").text
+        accExamCompCnt = node.find("accExamCompCnt").text
+        accDefRate = node.find("accDefRate").text
+        createDt = node.find("createDt").text
+        updateDt = node.find("updateDt").text
+
+        rows.append({"seq": seq, 
+                     "stateDt": stateDt, 
+                     "stateTime": stateTime, 
+                     "decideCnt": decideCnt, 
+                     "clearCnt": clearCnt,
+                     "examCnt": examCnt,
+                     "deathCnt": deathCnt,
+                     "careCnt": careCnt,
+                     "resutlNegCnt": resutlNegCnt,
+                     "accExamCnt": accExamCnt,
+                     "accExamCompCnt": accExamCompCnt,
+                     "accDefRate": accDefRate,
+                     "createDt": createDt,
+                     "updateDt": updateDt})
+        
+    df = pd.DataFrame(rows, columns=columns)
+    
+    return df
+
+
+if __name__ == '__main__':
+
+    arguments = sys.argv
+
+    # ['covid19.py', 'pediod', '20210501', '20210507']
+
+    if arguments[1] == 'period':
+        startdt = arguments[2]
+        enddt = arguments[3]
+        df = get_covid19_data(startdt, enddt)
+
+    else:
+        startdt = enddt = time.strftime('%Y%m%d', time.localtime(time.time()))
+        df = get_covid19_data(startdt, enddt)
+
+    print(df)
