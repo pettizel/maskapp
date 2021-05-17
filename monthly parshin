@@ -11,7 +11,7 @@ import datetime
 svc_url = "http://openapi.data.go.kr/openapi/service/rest/Covid19/getCovid19InfStateJson"
 serviceKey = """%2F2KW4c0b9FWLrg3LUUT5AaBLM3l%2FrMfZzNHFx%2BZ45iVaZXfJnr3H0YQ%2FAWAQlkoNMFCdR12jBYRpyQGFIY2Fng%3D%3D"""
 str_format = svc_url + "?serviceKey={0}&pageNo={1}&numOfRows={2}&startCreateDt={3}&endCreateDt={4}"
-columns = ["seq", "stateDt", "stateTime", "decideCnt", "clearCnt", "deathCnt", "careCnt", "resutlNegCnt", 
+columns = ["seq", "stateDt", "stateTime", "examCnt", "decideCnt", "clearCnt", "deathCnt", "careCnt", "resutlNegCnt", 
            "accExamCnt", "accExamCompCnt", "accDefRate", "createDt", "updateDt"]
 
 def get_covid19_data(startCreateDt, endCreateDt, pageNo=1, numOfRows=10):
