@@ -1,0 +1,9 @@
+{
+	"name": "Teams-DataFactory",
+	"location": "koreacentral",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "5884d2dd-7cb0-465f-b638-57970c7afe8c",
+		"tenantId": "788b6556-3d3b-43d0-863f-2e8fb05c5e3b"
+	}
+}

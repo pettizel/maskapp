@@ -1,0 +1,53 @@
+{
+	"name": "Employees_Table",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureMySql",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureMySqlTable",
+		"schema": [
+			{
+				"name": "emp_no",
+				"type": "int",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "birth_date",
+				"type": "date",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "first_name",
+				"type": "varchar",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "last_name",
+				"type": "varchar",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "gender",
+				"type": "enum",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "hire_date",
+				"type": "date",
+				"precision": 0,
+				"scale": 0
+			}
+		],
+		"typeProperties": {
+			"tableName": "employees"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

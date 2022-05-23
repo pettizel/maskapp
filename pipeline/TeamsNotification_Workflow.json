@@ -1,0 +1,123 @@
+{
+	"name": "TeamsNotification_Workflow",
+	"properties": {
+		"activities": [
+			{
+				"name": "Send notification to a channel in Microsoft Teams1",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Copy_data",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Send notification to a channel in Microsoft Teams1",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"dataFactorySubscription": "1b58eeeb-9b12-4dda-a816-57633f8fe7fb",
+						"dataFactoryResourceGroup": "JHB_RG",
+						"pipelineRunId": {
+							"value": "@pipeline().RunId",
+							"type": "Expression"
+						},
+						"teamsWebhookUrl": "https://metanet.webhook.office.com/webhookb2/42f72c4d-56e8-4c36-b719-dcf44fc3aeed@9e00aa79-8db6-4d36-a892-747eec99934d/IncomingWebhook/fc4ab0538e4849f9a27bdf3b759fd460/632ddb53-f57c-4697-9345-21b642309e55",
+						"activityName": "Copy_data",
+						"activityMessage": {
+							"value": "Pipeline - Copy_data ran with Failed.",
+							"type": "Expression"
+						},
+						"activityDuration": {
+							"value": "@activity('Copy_data').Duration\n",
+							"type": "Expression"
+						},
+						"activityStatus": {
+							"value": "@activity('Copy_data').Status",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Copy_data",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureMySqlSource",
+						"queryTimeout": "02:00:00"
+					},
+					"sink": {
+						"type": "AzureMySqlSink",
+						"writeBatchSize": 10000,
+						"writeBatchTimeout": "00:00:30"
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "emp_no",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "emp_no",
+									"type": "Int32",
+									"physicalType": "int"
+								}
+							},
+							{
+								"source": {
+									"name": "to_date",
+									"type": "DateTime",
+									"physicalType": "date"
+								},
+								"sink": {
+									"name": "birth_date",
+									"type": "DateTime",
+									"physicalType": "date"
+								}
+							}
+						],
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "Title_Table",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "Employees_Table",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2022-05-20T05:09:52Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

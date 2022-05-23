@@ -1,0 +1,41 @@
+{
+	"name": "Title_Table",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureMySql",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureMySqlTable",
+		"schema": [
+			{
+				"name": "emp_no",
+				"type": "int",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "title",
+				"type": "varchar",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "from_date",
+				"type": "date",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "to_date",
+				"type": "date",
+				"precision": 0,
+				"scale": 0
+			}
+		],
+		"typeProperties": {
+			"tableName": "titles"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
