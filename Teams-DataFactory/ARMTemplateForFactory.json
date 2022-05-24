@@ -1,0 +1,382 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "Teams-DataFactory"
+		},
+		"AzureMySql_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'AzureMySql'"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/Send notification to a channel in Microsoft Teams1')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Use this pipeline template to send notification on a teams channel. \n\nhttps://adf.azure.com/en-us/monitoring/pipelineruns/f90465ff-b8ea-4f0f-9110-178164bc8ee4?factory=/subscriptions/7b68d2b5-dfbe-46e1-938f-98ed143b7953/resourceGroups/demo101-rg/providers/Microsoft.DataFactory/factories/demofactory101",
+				"activities": [
+					{
+						"name": "Set Facts",
+						"description": "Details on Fact schema for teams messages: https://adaptivecards.io/explorer/Fact.html",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "messageCardString",
+							"value": {
+								"value": "{\n    \"@type\": \"MessageCard\",\n    \"@context\": \"http://schema.org/extensions\",\n    \"themeColor\": \"0076D7\",\n    \"summary\": \"Pipeline status alert message​​​​\",\n    \"sections\": [\n        {\n            \"activityTitle\": \"Pipeline alert​​​​\",\n            \"facts\": [\n                {\n                    \"name\": \"Pipeline RunId:\",\n                    \"value\": \"@{pipeline().parameters.pipelineRunId}\"\n                },\n                {\n                    \"name\": \"Activity name:\",\n                    \"value\": \"@{pipeline().parameters.activityName}\"\n                },\n                {\n                    \"name\": \"Activity status:\",\n                    \"value\": \"@{pipeline().parameters.activityStatus}\"\n                },\n                {\n                    \"name\": \"Execution duration (s):\",\n                    \"value\": \"@{pipeline().parameters.activityDuration}\"\n                },\n                {\n                    \"name\": \"Message\",\n                    \"value\": \"@{pipeline().parameters.activityMessage}\"\n                },\n                {\n                    \"name\": \"Notification time (UTC):\",\n                    \"value\": \"@{utcNow()}\"\n                },\n                {\n                    \"name\": \"Data Factory name:\",\n                    \"value\": \"@{pipeline().DataFactory}\"\n                }\n            ],\n            \"markdown\": true\n        }\n    ],\n    \"potentialAction\": [\n        {\n            \"@type\": \"OpenUri\",\n            \"name\": \"View pipeline run\",\n            \"targets\": [\n                {\n                    \"os\": \"default\",\n                    \"uri\": \"@{concat('https://adf.azure.com/monitoring/pipelineruns/',pipeline().parameters.pipelineRunId,'?factory=/subscriptions/',pipeline().parameters.dataFactorySubscription,'/resourceGroups/',pipeline().parameters.dataFactoryResourceGroup,'/providers/Microsoft.DataFactory/factories/',pipeline().DataFactory)}\"\n                }\n            ]\n        }\n    ]\n}",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Call Teams Webhook",
+						"description": "Invokes teams channel's webbook.",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "Set Facts",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "@pipeline().parameters.teamsWebhookUrl",
+								"type": "Expression"
+							},
+							"method": "POST",
+							"headers": {},
+							"body": {
+								"value": "@json(variables('messageCardString'))",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"parameters": {
+					"dataFactorySubscription": {
+						"type": "string",
+						"defaultValue": "1b58eeeb-9b12-4dda-a816-57633f8fe7fb"
+					},
+					"dataFactoryResourceGroup": {
+						"type": "string",
+						"defaultValue": "JHB_RG"
+					},
+					"pipelineRunId": {
+						"type": "string",
+						"defaultValue": "Overwrite the value from the calling activity "
+					},
+					"teamsWebhookUrl": {
+						"type": "string",
+						"defaultValue": "https://metanet.webhook.office.com/webhookb2/42f72c4d-56e8-4c36-b719-dcf44fc3aeed@9e00aa79-8db6-4d36-a892-747eec99934d/IncomingWebhook/fc4ab0538e4849f9a27bdf3b759fd460/632ddb53-f57c-4697-9345-21b642309e55"
+					},
+					"activityName": {
+						"type": "string",
+						"defaultValue": "Copy_data"
+					},
+					"activityMessage": {
+						"type": "string",
+						"defaultValue": "Overwrite the value from the calling activity "
+					},
+					"activityDuration": {
+						"type": "string",
+						"defaultValue": "Overwrite the value from the calling activity "
+					},
+					"activityStatus": {
+						"type": "string",
+						"defaultValue": "Failed"
+					}
+				},
+				"variables": {
+					"messageCardString": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"lastPublishTime": "2022-05-20T05:09:52Z"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TeamsNotification_Workflow')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Send notification to a channel in Microsoft Teams1",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Copy_data",
+								"dependencyConditions": [
+									"Failed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Send notification to a channel in Microsoft Teams1",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"dataFactorySubscription": "1b58eeeb-9b12-4dda-a816-57633f8fe7fb",
+								"dataFactoryResourceGroup": "JHB_RG",
+								"pipelineRunId": {
+									"value": "@pipeline().RunId",
+									"type": "Expression"
+								},
+								"teamsWebhookUrl": "https://metanet.webhook.office.com/webhookb2/42f72c4d-56e8-4c36-b719-dcf44fc3aeed@9e00aa79-8db6-4d36-a892-747eec99934d/IncomingWebhook/fc4ab0538e4849f9a27bdf3b759fd460/632ddb53-f57c-4697-9345-21b642309e55",
+								"activityName": "Copy_data",
+								"activityMessage": {
+									"value": "Pipeline - Copy_data ran with Failed.",
+									"type": "Expression"
+								},
+								"activityDuration": {
+									"value": "@activity('Copy_data').Duration\n",
+									"type": "Expression"
+								},
+								"activityStatus": {
+									"value": "@activity('Copy_data').Status",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "Copy_data",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureMySqlSource",
+								"queryTimeout": "02:00:00"
+							},
+							"sink": {
+								"type": "AzureMySqlSink",
+								"writeBatchSize": 10000,
+								"writeBatchTimeout": "00:00:30"
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "emp_no",
+											"type": "Int32",
+											"physicalType": "int"
+										},
+										"sink": {
+											"name": "emp_no",
+											"type": "Int32",
+											"physicalType": "int"
+										}
+									},
+									{
+										"source": {
+											"name": "to_date",
+											"type": "DateTime",
+											"physicalType": "date"
+										},
+										"sink": {
+											"name": "birth_date",
+											"type": "DateTime",
+											"physicalType": "date"
+										}
+									}
+								],
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "Title_Table",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "Employees_Table",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					},
+					{
+						"name": "Wait",
+						"type": "Wait",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"waitTimeInSeconds": 1
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2022-05-20T05:09:52Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/Send notification to a channel in Microsoft Teams1')]",
+				"[concat(variables('factoryId'), '/datasets/Title_Table')]",
+				"[concat(variables('factoryId'), '/datasets/Employees_Table')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Employees_Table')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureMySql",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureMySqlTable",
+				"schema": [
+					{
+						"name": "emp_no",
+						"type": "int",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "birth_date",
+						"type": "date",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "first_name",
+						"type": "varchar",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "last_name",
+						"type": "varchar",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "gender",
+						"type": "enum",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "hire_date",
+						"type": "date",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"tableName": "employees"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureMySql')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Title_Table')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureMySql",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureMySqlTable",
+				"schema": [
+					{
+						"name": "emp_no",
+						"type": "int",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "title",
+						"type": "varchar",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "from_date",
+						"type": "date",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "to_date",
+						"type": "date",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"tableName": "titles"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureMySql')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureMySql')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureMySql",
+				"typeProperties": {
+					"connectionString": "[parameters('AzureMySql_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		}
+	]
+}
